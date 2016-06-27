@@ -27,21 +27,14 @@ switch (controlWord){
 
     case "spotify-this-song":
         var songName="";
-        //check to see if app was called with enough arguments
-        if (process.argv[3] === undefined) {
-            //force song name if it is not passed in app
-            songName = "what's my age again";
-            //console.log("if undefined");
-        }
-        else{
-            songName = process.argv[3];
-            //console.log("else -- process.argv[3] = "+process.argv[3]);
-        }
+        songName = process.argv[3];
         spotify_this_song(songName);
     break;
 
     case "movie-this":
-        movie_this();
+        var movieName="";
+        movieName = process.argv[3];
+        movie_this(movieName);
     break;
 
     case "do-what-it-says":
@@ -59,7 +52,11 @@ function my_tweets(){
 
 
 function spotify_this_song(songName){
-    //console.log("spotify_this_song(songName) = " + songName);
+    //check to see if was passed a valid songName
+    if (songName === undefined) {
+        //force song name if it is not passed
+        songName = "what's my age again";
+    }
     spotify.search({ type: 'track', query: songName }, function(err, spotifyData) {
         if ( err ) {
             console.log('Error occurred: ' + err);
@@ -83,8 +80,28 @@ function spotify_this_song(songName){
 }
 
 
-function movie_this(){
+function movie_this(theMovie){
+    console.log("theMovie = "+theMovie);
+    //check to see if was passed a valid songName
+    if (theMovie === undefined) {
+        //force song name if it is not passed
+        theMovie = "Mr. Nobody";
+    }
+    console.log("theMovie = "+theMovie);
+    request('http://www.omdbapi.com/?t='+theMovie+'&y=&plot=short&r=json', function (error, response, movieData) {
+        if (!error && response.statusCode == 200) {
+            var data = JSON.parse(movieData);
 
+            console.log("Title: "+data.Title);
+            console.log("Year: "+data.Year);
+            console.log("Rated: "+data.Rated);
+            console.log("IMDB Rating: "+data.imdbRating);
+            console.log("Country: "+data.Country);
+            console.log("Language: "+data.Language);
+            console.log("Plot: "+data.Plot);
+            console.log("Actors: "+data.Actors);
+        }
+    })
 }
 
 function do_what_it_says(){
