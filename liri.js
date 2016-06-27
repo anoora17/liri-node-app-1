@@ -3,12 +3,19 @@ var twitter = require('twitter');
 var spotify = require('spotify');
 var request = require('request');
 var fs = require('fs');
-
+var keys = require('./keys.js');
 var controlWord;
 
 
+var twitterKeys = keys.twitterKeys;
+
+// Loop through band list and print out details
+for (var key in twitterKeys) {
+    console.log("A " + key + " band is " + twitterKeys[key] + ".");
+}
+
 //check to see it is loaded
-//console.log("I'm loaded!!!");
+console.log("I'm loaded!!!");
 //console.log("process.argv[2] = "+process.argv[2]);
 //console.log("process.argv[3] = "+process.argv[3]);
 if (process.argv.length === 2) {
@@ -81,13 +88,11 @@ function spotify_this_song(songName){
 
 
 function movie_this(theMovie){
-    console.log("theMovie = "+theMovie);
     //check to see if was passed a valid songName
     if (theMovie === undefined) {
         //force song name if it is not passed
         theMovie = "Mr. Nobody";
     }
-    console.log("theMovie = "+theMovie);
     request('http://www.omdbapi.com/?t='+theMovie+'&y=&plot=short&r=json', function (error, response, movieData) {
         if (!error && response.statusCode == 200) {
             var data = JSON.parse(movieData);
@@ -105,7 +110,33 @@ function movie_this(theMovie){
 }
 
 function do_what_it_says(){
+    fs.readFile("random.txt", "utf8", function(error, fileData) {
+        // Then split it by commas (to make it more readable)
+        var dataArr = fileData.split(',');
+        var controlWord = dataArr[0];
+        switch (controlWord){
+            case "my-tweets":
+                my_tweets();
+            break;
 
+            case "spotify-this-song":
+                var songName="";
+                songName = dataArr[1];
+                spotify_this_song(songName);
+            break;
+
+            case "movie-this":
+                var movieName="";
+                movieName = dataArr[1];
+                movie_this(movieName);
+            break;
+
+            default:
+                //when in doubt halt and self destruct
+                console.log("the do-what-it-says function does not have adequate information to proceed");
+                //format c:
+        }
+    });
 }
 
 
