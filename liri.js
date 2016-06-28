@@ -7,17 +7,11 @@ var keys = require('./keys.js');
 var controlWord;
 
 
-var twitterKeys = keys.twitterKeys;
 
-// Loop through band list and print out details
-for (var key in twitterKeys) {
-    console.log("A " + key + " band is " + twitterKeys[key] + ".");
-}
 
 //check to see it is loaded
 console.log("I'm loaded!!!");
-//console.log("process.argv[2] = "+process.argv[2]);
-//console.log("process.argv[3] = "+process.argv[3]);
+
 if (process.argv.length === 2) {
     //no argv for control word. force switch to default
     controlWord = 'use_default';
@@ -54,7 +48,25 @@ switch (controlWord){
 }
 
 function my_tweets(){
+    // Twitter API Credentials
+    var client = new twitter({
+        consumer_key: keys.twitterKeys.consumer_key,
+        consumer_secret: keys.twitterKeys.consumer_secret,
+        access_token_key: keys.twitterKeys.access_token_key,
+        access_token_secret: keys.twitterKeys.access_token_secret
+    });
 
+    // Make call to Twitter API to get user's timeline
+    client.get('statuses/user_timeline', {screen_name: 'mike123henry'}, function(error, tweets, response){
+        if (!error) {
+            console.log('tweets: '+JSON.stringify(tweets, null, 2));
+        } else {
+            console.error('An error occurred!'); //error handling
+            console.log('response = '+response);
+            console.log('error = '+error);
+            console.log('tweets = '+tweets);
+        }
+    });
 }
 
 
