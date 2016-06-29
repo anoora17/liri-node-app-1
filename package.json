@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/mike123henry/liri-node-app#readme",
   "dependencies": {
+    "moment": "^2.13.0",
     "request": "^2.72.0",
     "spotify": "^0.3.0",
     "twitter": "^1.3.0"

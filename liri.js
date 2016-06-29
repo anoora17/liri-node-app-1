@@ -4,17 +4,22 @@ var spotify = require('spotify');
 var request = require('request');
 var fs = require('fs');
 var keys = require('./keys.js');
+var moment = require('moment');
 var controlWord;
 
-
+//global control for logging
+var outConsole = true;
+var outFile = true;
 
 
 //check to see it is loaded
-console.log("I'm loaded!!!");
-
+logger("================================================================================================");
+logger("liri.js was call on  "+moment().format("dddd, MMMM Do YYYY")+" at "+moment().format("h:mm:ss A")+" with arguments of " +process.argv[2] +" and " + process.argv[3]);
+logger("================================================================================================",false,2);
 if (process.argv.length === 2) {
     //no argv for control word. force switch to default
     controlWord = 'use_default';
+
 }
 else{
     controlWord = process.argv[2];
@@ -59,12 +64,13 @@ function my_tweets(){
     // Make call to Twitter API to get user's timeline
     client.get('statuses/user_timeline', {screen_name: 'mike123henry'}, function(error, tweets, response){
         if (!error) {
-            console.log('tweets: '+JSON.stringify(tweets, null, 2));
+            for (var i = 0; i < JSON.stringify(tweets.length); i++) {
+                logger('tweets: '+JSON.stringify(tweets[i].text, null, 2));
+                logger('time: '+JSON.stringify(tweets[i].created_at, null, 2),false,true);
+            }
         } else {
             console.error('An error occurred!'); //error handling
-            console.log('response = '+response);
-            console.log('error = '+error);
-            console.log('tweets = '+tweets);
+            logger('error statusCode = '+response.statusCode);
         }
     });
 }
@@ -78,20 +84,19 @@ function spotify_this_song(songName){
     }
     spotify.search({ type: 'track', query: songName }, function(err, spotifyData) {
         if ( err ) {
-            console.log('Error occurred: ' + err);
+            logger('Error occurred: ' + err);
         return;
         }
         if (spotifyData.tracks.items.length === 0) {
-            console.log('No data was returned by Spotify -- if the song name is more than one word enclose it in quotes and check the spelling...');
-        }
-        else{
+            logger('No data was returned by Spotify -- if the song name is more than one word enclose it in quotes and check the spelling...');
+        }else{
             for (var i = 0; i < spotifyData.tracks.items.length; i++) {
-            console.log(i+1);
-            console.log('Artist: '+JSON.stringify(spotifyData.tracks.items[i].artists[0].name, null, 2));
-            console.log('Song Name: '+JSON.stringify(spotifyData.tracks.items[i].name, null, 2));
-            console.log('Preview Song: '+JSON.stringify(spotifyData.tracks.items[i].preview_url, null, 2));
-            console.log('Album: '+JSON.stringify(spotifyData.tracks.items[i].album.name, null, 2));
-            console.log("===============================================");
+                logger(i+1);
+                logger('Artist: '+JSON.stringify(spotifyData.tracks.items[i].artists[0].name, null, 2));
+                logger('Song Name: '+JSON.stringify(spotifyData.tracks.items[i].name, null, 2));
+                logger('Preview Song: '+JSON.stringify(spotifyData.tracks.items[i].preview_url, null, 2));
+                logger('Album: '+JSON.stringify(spotifyData.tracks.items[i].album.name, null, 2));
+                logger("===============================================",false,true);
             }
         }
 
@@ -109,14 +114,14 @@ function movie_this(theMovie){
         if (!error && response.statusCode == 200) {
             var data = JSON.parse(movieData);
 
-            console.log("Title: "+data.Title);
-            console.log("Year: "+data.Year);
-            console.log("Rated: "+data.Rated);
-            console.log("IMDB Rating: "+data.imdbRating);
-            console.log("Country: "+data.Country);
-            console.log("Language: "+data.Language);
-            console.log("Plot: "+data.Plot);
-            console.log("Actors: "+data.Actors);
+            logger("Title: "+data.Title);
+            logger("Year: "+data.Year, true);
+            logger("Rated: "+data.Rated, true);
+            logger("IMDB Rating: "+data.imdbRating, true);
+            logger("Country: "+data.Country, true);
+            logger("Language: "+data.Language, true);
+            logger("Plot: "+data.Plot, true);
+            logger("Actors: "+data.Actors, true);
         }
     })
 }
@@ -145,14 +150,41 @@ function do_what_it_says(){
 
             default:
                 //when in doubt halt and self destruct
-                console.log("the do-what-it-says function does not have adequate information to proceed");
+                logger("the do-what-it-says function does not have adequate information to proceed");
                 //format c:
         }
     });
 }
 
-
-
+//global variables outConsole and outFile control what is output
+//txt must be passed or nothing will be processed
+//addTab and addNewLine optional and can be passed as a boolean or a number
+function logger(txt, addTab, addNewLine){
+    var logMe;
+    if(txt != undefined){
+        logMe = txt;
+        if (addTab > 0) {
+            for (var i = 0; i < addTab; i++) {
+                logMe = "\t"+logMe;
+            };
+        }
+        if (addNewLine > 0) {
+            for (var i = 0; i < addNewLine; i++) {
+                logMe = logMe + "\n";
+            };
+        };
+    if (outConsole) {
+        console.log(logMe);
+        }
+    if (outFile) {
+        fs.appendFile("log.txt", logMe + "\n", function(err) {
+            if(err) {
+                return console.log(err);
+            }
+});
+        }
+    };
+}//end function logger()
 
 
 
