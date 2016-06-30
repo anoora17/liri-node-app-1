@@ -9,13 +9,13 @@ var controlWord;
 
 //global control for logging
 var outConsole = true;
-var outFile = true;
+var outFile = true; //the file output function has problems with asyncronous output making the order wrong
 
 
 //check to see it is loaded
-logger("================================================================================================");
+logger("===========================================================================================================");
 logger("liri.js was call on  "+moment().format("dddd, MMMM Do YYYY")+" at "+moment().format("h:mm:ss A")+" with arguments of " +process.argv[2] +" and " + process.argv[3]);
-logger("================================================================================================",false,2);
+logger("===========================================================================================================",false,2);
 if (process.argv.length === 2) {
     //no argv for control word. force switch to default
     controlWord = 'use_default';
@@ -48,8 +48,8 @@ switch (controlWord){
     break;
 
     default:
-        //when in doubt use the file method
-        do_what_it_says();
+        //prompt for correct controlWord
+        logger('Please enter a valid control work as the first argument\nmy-tweets\nspotify-this-song\nmovie-this\ndo-what-it-says');
 }
 
 function my_tweets(){
@@ -110,10 +110,10 @@ function movie_this(theMovie){
         //force song name if it is not passed
         theMovie = "Mr. Nobody";
     }
-    request('http://www.omdbapi.com/?t='+theMovie+'&y=&plot=short&r=json', function (error, response, movieData) {
+    request('http://www.omdbapi.com/?t='+theMovie+'&y=&tomatoes=true&plot=short&r=json', function (error, response, movieData) {
         if (!error && response.statusCode == 200) {
             var data = JSON.parse(movieData);
-
+            //console.log("movieData = "+movieData)
             logger("Title: "+data.Title);
             logger("Year: "+data.Year, true);
             logger("Rated: "+data.Rated, true);
@@ -122,6 +122,8 @@ function movie_this(theMovie){
             logger("Language: "+data.Language, true);
             logger("Plot: "+data.Plot, true);
             logger("Actors: "+data.Actors, true);
+            logger("Rotten Tomatoes Rating: " +data.tomatoUserRating,true);
+            logger("Rotten Tomatoes URL: " +data.tomatoURL,true);
         }
     })
 }
@@ -160,29 +162,33 @@ function do_what_it_says(){
 //txt must be passed or nothing will be processed
 //addTab and addNewLine optional and can be passed as a boolean or a number
 function logger(txt, addTab, addNewLine){
-    var logMe;
+    var consoleLogMe;
+    var fileAppendMe;
     if(txt != undefined){
-        logMe = txt;
+        consoleLogMe = txt;
+        fileAppendMe = txt;
         if (addTab > 0) {
             for (var i = 0; i < addTab; i++) {
-                logMe = "\t"+logMe;
-            };
-        }
-        if (addNewLine > 0) {
-            for (var i = 0; i < addNewLine; i++) {
-                logMe = logMe + "\n";
+                consoleLogMe = "\t"+consoleLogMe;
+                fileAppendMe = "\t"+fileAppendMe;
             };
         };
-    if (outConsole) {
-        console.log(logMe);
-        }
-    if (outFile) {
-        fs.appendFile("log.txt", logMe + "\n", function(err) {
-            if(err) {
-                return console.log(err);
+        if (addNewLine > 0) {
+            for (var i = 0; i < addNewLine; i++) {
+                consoleLogMe = consoleLogMe + "\n";
+            };
+        };
+        if (outConsole) {
+            console.log(consoleLogMe);
             }
-});
-        }
+        if (outFile) {
+            fs.appendFileSync("log.txt", fileAppendMe + "\n")
+            //fs.appendFile("log.txt", fileAppendMe + "\n", function(err) {
+                //if(err) {
+                   // return console.log(err);
+               // }
+            //});
+        };
     };
 }//end function logger()
 
